@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MedCheck</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <main class="popup">
+      <header class="topbar">
+        <h1>MedCheck</h1>
+        <p id="statusText">Preparing analysis...</p>
+      </header>
+
+      <section class="scope-controls">
+        <div class="scope-row">
+          <label class="scope-option">
+            <input type="radio" name="analysisScope" value="article" checked />
+            Entire article
+          </label>
+          <label class="scope-option">
+            <input id="selectionScopeInput" type="radio" name="analysisScope" value="selection" />
+            Selected text
+          </label>
+          <button id="runAnalysisBtn" class="run-btn" type="button">Analyze</button>
+        </div>
+        <p id="selectionInfoText" class="scope-hint"></p>
+      </section>
+
+      <section id="errorBox" class="error hidden"></section>
+
+      <section id="summaryCard" class="summary hidden">
+        <h2>Page Summary</h2>
+        <p id="overallVerdict" class="overall"></p>
+        <div class="metrics">
+          <span id="supportedCount" class="metric supported"></span>
+          <span id="contradictedCount" class="metric contradicted"></span>
+          <span id="uncertainCount" class="metric uncertain"></span>
+        </div>
+      </section>
+
+      <section>
+        <h2>Claims</h2>
+        <div id="claimsList" class="claims"></div>
+      </section>
+
+      <footer class="footer">
+        <p id="disclaimerText"></p>
+      </footer>
+    </main>
+
+    <script type="module" src="/src/popup.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "@medcheck/extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "vite build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@mozilla/readability": "^0.5.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.276",
+    "@types/node": "^22.13.8",
+    "jsdom": "^26.0.0",
+    "typescript": "^5.7.3",
+    "vite": "^6.2.0",
+    "vitest": "^3.0.7"
+  }
+}

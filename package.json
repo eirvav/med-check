@@ -1,0 +1,18 @@
+{
+  "name": "med-check",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/extension",
+    "apps/proxy"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev:proxy": "npm run dev --workspace @medcheck/proxy",
+    "dev:ext": "npm run dev --workspace @medcheck/extension",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  }
+}

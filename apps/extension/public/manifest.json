@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "MedCheck",
+  "version": "0.1.0",
+  "description": "Checks medical article claims against reputable sources.",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": ["http://127.0.0.1:8787/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "src/popup.html"
+  },
+  "options_page": "src/options.html"
+}

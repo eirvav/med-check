@@ -1,0 +1,307 @@
+:root {
+  color-scheme: light;
+  font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+  --bg: #f7f9fc;
+  --surface: #ffffff;
+  --text: #1b2430;
+  --muted: #4c5a6a;
+  --border: #d7dee8;
+  --accent: #1f6feb;
+  --supported: #1e8e3e;
+  --contradicted: #c5221f;
+  --uncertain: #b26f00;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+.popup {
+  width: 420px;
+  max-height: 600px;
+  overflow: auto;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.options {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.topbar {
+  margin-bottom: 12px;
+}
+
+.topbar h1,
+.options h1 {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.topbar p,
+.options p {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.scope-controls {
+  margin-bottom: 12px;
+}
+
+.scope-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.scope-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.run-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 7px 10px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.run-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.scope-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.summary,
+.claim-card,
+.error,
+.form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.summary {
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.metrics {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.metric {
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.metric.supported {
+  color: var(--supported);
+  background: rgba(30, 142, 62, 0.12);
+}
+
+.metric.contradicted {
+  color: var(--contradicted);
+  background: rgba(197, 34, 31, 0.12);
+}
+
+.metric.uncertain {
+  color: var(--uncertain);
+  background: rgba(178, 111, 0, 0.14);
+}
+
+.claims {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.claim-card {
+  padding: 10px;
+}
+
+.claim-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.claim-text {
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.badge {
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.badge.supported {
+  color: var(--supported);
+  background: rgba(30, 142, 62, 0.12);
+}
+
+.badge.contradicted {
+  color: var(--contradicted);
+  background: rgba(197, 34, 31, 0.12);
+}
+
+.badge.uncertain {
+  color: var(--uncertain);
+  background: rgba(178, 111, 0, 0.14);
+}
+
+.confidence,
+.rationale {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.citation-list {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.citation-item {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.citation-item a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.citation-item a:hover {
+  text-decoration: underline;
+}
+
+.domain-chip {
+  display: inline-block;
+  border-radius: 8px;
+  padding: 2px 6px;
+  margin-right: 6px;
+  font-size: 11px;
+  background: #eef2f8;
+}
+
+.domain-chip.rejected {
+  background: rgba(197, 34, 31, 0.12);
+  color: var(--contradicted);
+}
+
+.error {
+  color: var(--contradicted);
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.hidden {
+  display: none;
+}
+
+.footer {
+  margin-top: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+
+.footer p {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.form {
+  margin-top: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.form input,
+.form textarea,
+.form button {
+  font: inherit;
+}
+
+.form input,
+.form textarea {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.checkbox {
+  flex-direction: row !important;
+  align-items: center;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.actions button {
+  border: none;
+  border-radius: 8px;
+  padding: 9px 12px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.actions button#resetBtn {
+  background: #4c5a6a;
+}
+
+.save-status {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
