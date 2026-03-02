@@ -13,7 +13,8 @@ export const DEFAULT_ALLOWED_DOMAINS = [
   "who.int",
   "cdc.gov",
   "nih.gov",
-  "fda.gov"
+  "fda.gov",
+  "atsjournals.org"
 ];
 
 export const DEFAULT_PRIMARY_DOMAINS = [
@@ -23,12 +24,13 @@ export const DEFAULT_PRIMARY_DOMAINS = [
   "nejm.org",
   "thelancet.com",
   "jamanetwork.com",
-  "bmj.com"
+  "bmj.com",
+  "atsjournals.org"
 ];
 
 export const DEFAULT_SETTINGS: AnalysisSettings = {
   claimLimit: 8,
-  minCitations: 2,
+  minCitations: 1,
   requirePrimarySource: true,
   strictWhitelist: true,
   allowedDomains: DEFAULT_ALLOWED_DOMAINS,

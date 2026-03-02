@@ -333,6 +333,7 @@ async function analyzeActiveTabByScope(scope: AnalysisScope): Promise<AnalyzeRes
         title: scope === "selection" ? `${extraction.title} (selected text)` : extraction.title,
         language: extraction.language,
         articleText: extraction.trimmedText,
+        analysisMode: scope,
         settings: requestSettings
       },
       settings.proxyBaseUrl

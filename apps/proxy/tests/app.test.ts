@@ -10,6 +10,7 @@ const basePayload = {
   title: "Medical Article",
   language: "en",
   articleText: "A".repeat(500),
+  analysisMode: "article",
   settings: {
     claimLimit: 8,
     minCitations: 2,
@@ -73,5 +74,18 @@ describe("POST /api/analyze", () => {
 
     expect(response.status).toBe(403);
     expect(response.body.error.code).toBe("FORBIDDEN_ORIGIN");
+  });
+
+  it("allows short selection-mode text", async () => {
+    const stubClient: PerplexityClient = async (): Promise<ModelOutput> => ({ claims: [] });
+    const app = createApp(stubClient);
+
+    const response = await request(app).post("/api/analyze").send({
+      ...basePayload,
+      analysisMode: "selection",
+      articleText: "Short sentence for selection mode."
+    });
+
+    expect(response.status).toBe(200);
   });
 });

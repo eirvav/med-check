@@ -103,7 +103,7 @@ Secondary institutional domains:
 Rules:
 
 - Domain exact/subdomain match is allowed.
-- For non-`Uncertain` verdicts, at least 2 accepted citations are required.
+- For non-`Uncertain` verdicts, at least 1 accepted citation is required.
 - At least 1 accepted citation must come from a primary domain (if enabled).
 
 ## Testing

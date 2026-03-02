@@ -15,6 +15,7 @@ export const analyzeRequestSchema = z.object({
   title: z.string().min(1),
   language: z.string().nullable(),
   articleText: z.string().min(1),
+  analysisMode: z.enum(["article", "selection"]).default("article"),
   settings: settingsSchema
 });
 

@@ -30,6 +30,8 @@ describe("applyVerdictGating", () => {
     const [result] = applyVerdictGating(modelOutput, settings);
     expect(result.verdict).toBe("Uncertain");
     expect(result.citations[0].accepted).toBe(false);
+    expect(result.uncertaintyReason).toContain("accepted citations");
+    expect(result.evidenceSummary.acceptedCitations).toBe(0);
   });
 
   it("keeps contradicted when evidence gates pass", () => {
@@ -50,6 +52,9 @@ describe("applyVerdictGating", () => {
 
     const [result] = applyVerdictGating(modelOutput, settings);
     expect(result.verdict).toBe("Contradicted");
+    expect(result.uncertaintyReason).toBeUndefined();
+    expect(result.evidenceSummary.acceptedCitations).toBe(2);
+    expect(result.evidenceSummary.primaryCitations).toBe(1);
   });
 
   it("summarizes claim verdict counts", () => {
@@ -59,19 +64,65 @@ describe("applyVerdictGating", () => {
         verdict: "Supported",
         confidence: 0.7,
         rationale: "r",
-        citations: []
+        citations: [],
+        evidenceSummary: {
+          acceptedCitations: 2,
+          totalCitations: 2,
+          primaryCitations: 1,
+          minCitationsRequired: 2,
+          primarySourceRequired: true,
+          distinctSourceDomains: 2
+        }
       },
       {
         claim: "c2",
         verdict: "Uncertain",
         confidence: 0.4,
         rationale: "r",
-        citations: []
+        citations: [],
+        uncertaintyReason: "insufficient evidence",
+        evidenceSummary: {
+          acceptedCitations: 0,
+          totalCitations: 1,
+          primaryCitations: 0,
+          minCitationsRequired: 2,
+          primarySourceRequired: true,
+          distinctSourceDomains: 1
+        }
       }
     ]);
 
     expect(summary.supported).toBe(1);
     expect(summary.uncertain).toBe(1);
     expect(summary.overall).toBe("Mixed Evidence");
+  });
+
+  it("supports high-confidence cross-source claims even if non-whitelisted", () => {
+    const strictSettings: AnalysisSettings = {
+      ...settings,
+      minCitations: 1,
+      strictWhitelist: true
+    };
+
+    const modelOutput: ModelOutput = {
+      claims: [
+        {
+          claim: "Xenon is used for lung imaging studies",
+          verdict: "Supported",
+          confidence: 0.95,
+          rationale: "Multiple external sources agree.",
+          citations: [
+            { url: "https://source-a.example/xenon-lung-study", title: "A" },
+            { url: "https://source-b.example/xenon-approval", title: "B" }
+          ]
+        }
+      ]
+    };
+
+    const [result] = applyVerdictGating(modelOutput, strictSettings);
+    expect(result.verdict).toBe("Supported");
+    expect(result.policyOverride).toContain("cross-source consensus");
+    expect(result.evidenceSummary.acceptedCitations).toBe(0);
+    expect(result.evidenceSummary.distinctSourceDomains).toBe(2);
   });
 });

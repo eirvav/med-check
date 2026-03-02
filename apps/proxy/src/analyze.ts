@@ -24,6 +24,8 @@ function clampConfidence(value: number | undefined): number {
 
 export function applyVerdictGating(modelOutput: ModelOutput, settings: AnalysisSettings): ClaimResult[] {
   return modelOutput.claims.slice(0, settings.claimLimit).map((claim) => {
+    const confidence = clampConfidence(claim.confidence);
+
     const citations = claim.citations.map((citation) => {
       const domain = domainFromUrl(citation.url);
 
@@ -56,25 +58,62 @@ export function applyVerdictGating(modelOutput: ModelOutput, settings: AnalysisS
     });
 
     const acceptedCitations = citations.filter((citation) => citation.accepted);
+    const acceptedCitationsCount = acceptedCitations.length;
+    const validDomainCitations = citations.filter((citation) => citation.domain !== "invalid-url");
+    const distinctSourceDomains = new Set(validDomainCitations.map((citation) => citation.domain)).size;
     const primaryCitationCount = acceptedCitations.filter((citation) =>
       isAllowedDomain(citation.domain, settings.primaryDomains)
     ).length;
 
-    let verdict = normalizeVerdict(claim.verdict);
+    const normalizedModelVerdict = normalizeVerdict(claim.verdict);
+    let verdict = normalizedModelVerdict;
+    const uncertaintyReasons: string[] = [];
+    let policyOverride: string | undefined;
 
-    if (
-      acceptedCitations.length < settings.minCitations ||
-      (settings.requirePrimarySource && primaryCitationCount < 1)
-    ) {
-      verdict = "Uncertain";
+    const highConfidenceExternalConsensus =
+      normalizedModelVerdict === "Supported" &&
+      confidence >= 0.9 &&
+      acceptedCitationsCount < settings.minCitations &&
+      distinctSourceDomains >= 2;
+
+    if (highConfidenceExternalConsensus) {
+      verdict = "Supported";
+      policyOverride =
+        `high-confidence cross-source consensus (${distinctSourceDomains} sources), even though sources were outside your whitelist`;
+    } else if (normalizedModelVerdict === "Uncertain") {
+      uncertaintyReasons.push("the model itself returned a mixed or inconclusive verdict");
+    } else {
+      if (acceptedCitationsCount < settings.minCitations) {
+        uncertaintyReasons.push(
+          `only ${acceptedCitationsCount}/${settings.minCitations} accepted citations matched your source policy`
+        );
+      }
+
+      if (settings.requirePrimarySource && primaryCitationCount < 1) {
+        uncertaintyReasons.push("no accepted citation came from a primary medical source");
+      }
+
+      if (uncertaintyReasons.length > 0) {
+        verdict = "Uncertain";
+      }
     }
 
     return {
       claim: claim.claim,
       verdict,
-      confidence: clampConfidence(claim.confidence),
+      confidence,
       rationale: claim.rationale,
-      citations
+      citations,
+      uncertaintyReason: uncertaintyReasons.length > 0 ? uncertaintyReasons.join("; ") : undefined,
+      policyOverride,
+      evidenceSummary: {
+        acceptedCitations: acceptedCitationsCount,
+        totalCitations: citations.length,
+        primaryCitations: primaryCitationCount,
+        minCitationsRequired: settings.minCitations,
+        primarySourceRequired: settings.requirePrimarySource,
+        distinctSourceDomains
+      }
     };
   });
 }

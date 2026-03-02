@@ -10,6 +10,7 @@ import type { AnalyzeResponse, PerplexityClient } from "./types.js";
 
 const DISCLAIMER_TEXT =
   "MedCheck is for informational verification only and is not medical advice, diagnosis, or treatment.";
+const ANALYSIS_CACHE_TTL_MS = 10 * 60 * 1000;
 
 interface RequestWithId extends express.Request {
   requestId: string;
@@ -36,8 +37,45 @@ function setCorsHeaders(req: express.Request, res: express.Response): boolean {
   return false;
 }
 
+function buildCacheKey(payload: {
+  url: string;
+  title: string;
+  language: string | null;
+  articleText: string;
+  analysisMode: "article" | "selection";
+  settings: unknown;
+}): string {
+  return crypto
+    .createHash("sha256")
+    .update(
+      JSON.stringify({
+        model: process.env.PERPLEXITY_MODEL || "sonar-pro",
+        payload
+      })
+    )
+    .digest("hex");
+}
+
+function getCachedResponse(
+  cacheKey: string,
+  analysisCache: Map<string, { cachedAt: number; response: AnalyzeResponse }>
+): AnalyzeResponse | null {
+  const cached = analysisCache.get(cacheKey);
+  if (!cached) {
+    return null;
+  }
+
+  if (Date.now() - cached.cachedAt > ANALYSIS_CACHE_TTL_MS) {
+    analysisCache.delete(cacheKey);
+    return null;
+  }
+
+  return cached.response;
+}
+
 export function createApp(perplexityClient: PerplexityClient = fetchClaimsFromPerplexity): express.Express {
   const app = express();
+  const analysisCache = new Map<string, { cachedAt: number; response: AnalyzeResponse }>();
   app.disable("x-powered-by");
   app.use(express.json({ limit: "1mb" }));
 
@@ -109,17 +147,36 @@ export function createApp(perplexityClient: PerplexityClient = fetchClaimsFromPe
       return;
     }
 
-    if (payload.articleText.trim().length < 250) {
+    const minChars = payload.analysisMode === "selection" ? 20 : 250;
+    if (payload.articleText.trim().length < minChars) {
       res.status(400).json({
         error: {
           code: "NO_ARTICLE_CONTENT",
-          message: "Article content is too short to analyze."
+          message:
+            payload.analysisMode === "selection"
+              ? "Selected text is too short to analyze. Select at least one complete sentence."
+              : "Article content is too short to analyze."
         }
       });
       return;
     }
 
     try {
+      const cacheKey = buildCacheKey(payload);
+      const cachedResponse = getCachedResponse(cacheKey, analysisCache);
+      if (cachedResponse) {
+        console.log(
+          JSON.stringify({
+            level: "info",
+            requestId,
+            code: "CACHE_HIT",
+            durationMs: Date.now() - requestStart
+          })
+        );
+        res.json(cachedResponse);
+        return;
+      }
+
       const perplexityStartedAt = Date.now();
       const modelOutput = await perplexityClient({
         requestId,
@@ -154,6 +211,11 @@ export function createApp(perplexityClient: PerplexityClient = fetchClaimsFromPe
           claimCount: claims.length
         })
       );
+
+      analysisCache.set(cacheKey, {
+        cachedAt: Date.now(),
+        response
+      });
 
       res.json(response);
     } catch (error) {

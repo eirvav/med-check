@@ -15,6 +15,7 @@ export interface AnalyzeRequest {
   title: string;
   language: string | null;
   articleText: string;
+  analysisMode: "article" | "selection";
   settings: AnalysisSettings;
 }
 
@@ -32,6 +33,16 @@ export interface ClaimResult {
   confidence: number;
   rationale: string;
   citations: Citation[];
+  uncertaintyReason?: string;
+  policyOverride?: string;
+  evidenceSummary: {
+    acceptedCitations: number;
+    totalCitations: number;
+    primaryCitations: number;
+    minCitationsRequired: number;
+    primarySourceRequired: boolean;
+    distinctSourceDomains: number;
+  };
 }
 
 export interface AnalyzeResponse {

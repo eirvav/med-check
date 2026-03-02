@@ -17,6 +17,7 @@ const overallVerdict = document.getElementById("overallVerdict") as HTMLParagrap
 const supportedCount = document.getElementById("supportedCount") as HTMLSpanElement;
 const contradictedCount = document.getElementById("contradictedCount") as HTMLSpanElement;
 const uncertainCount = document.getElementById("uncertainCount") as HTMLSpanElement;
+const verdictHintText = document.getElementById("verdictHintText") as HTMLParagraphElement;
 const claimsList = document.getElementById("claimsList") as HTMLDivElement;
 const disclaimerText = document.getElementById("disclaimerText") as HTMLParagraphElement;
 const runAnalysisBtn = document.getElementById("runAnalysisBtn") as HTMLButtonElement;
@@ -97,11 +98,33 @@ function renderClaim(claimResult: ClaimResult): HTMLElement {
 
   const confidence = document.createElement("p");
   confidence.className = "confidence";
-  confidence.textContent = `Confidence: ${Math.round(claimResult.confidence * 100)}%`;
+  confidence.textContent = `Model confidence: ${Math.round(claimResult.confidence * 100)}%`;
+
+  const evidence = document.createElement("p");
+  evidence.className = "evidence";
+  evidence.textContent = `Evidence: ${claimResult.evidenceSummary.acceptedCitations}/${claimResult.evidenceSummary.minCitationsRequired} accepted citations from ${claimResult.evidenceSummary.distinctSourceDomains} source domains${
+    claimResult.evidenceSummary.primarySourceRequired
+      ? `, primary sources ${claimResult.evidenceSummary.primaryCitations > 0 ? "present" : "missing"}`
+      : ""
+  }.`;
+
+  let overrideReason: HTMLParagraphElement | null = null;
+  if (claimResult.policyOverride) {
+    overrideReason = document.createElement("p");
+    overrideReason.className = "evidence";
+    overrideReason.textContent = `Policy override: ${claimResult.policyOverride}.`;
+  }
 
   const rationale = document.createElement("p");
   rationale.className = "rationale";
   rationale.textContent = claimResult.rationale;
+
+  let uncertaintyReason: HTMLParagraphElement | null = null;
+  if (claimResult.verdict === "Uncertain" && claimResult.uncertaintyReason) {
+    uncertaintyReason = document.createElement("p");
+    uncertaintyReason.className = "uncertain-reason";
+    uncertaintyReason.textContent = `Why uncertain: ${claimResult.uncertaintyReason}.`;
+  }
 
   const citationList = document.createElement("div");
   citationList.className = "citation-list";
@@ -131,7 +154,22 @@ function renderClaim(claimResult: ClaimResult): HTMLElement {
     citationList.append(item);
   }
 
-  card.append(top, confidence, rationale, citationList);
+  if (uncertaintyReason && overrideReason) {
+    card.append(top, confidence, evidence, overrideReason, uncertaintyReason, rationale, citationList);
+    return card;
+  }
+
+  if (uncertaintyReason) {
+    card.append(top, confidence, evidence, uncertaintyReason, rationale, citationList);
+    return card;
+  }
+
+  if (overrideReason) {
+    card.append(top, confidence, evidence, overrideReason, rationale, citationList);
+    return card;
+  }
+
+  card.append(top, confidence, evidence, rationale, citationList);
   return card;
 }
 
@@ -224,6 +262,8 @@ async function runAnalysis(scope: AnalysisScope): Promise<void> {
     supportedCount.textContent = `Supported: ${pageSummary.supported}`;
     contradictedCount.textContent = `Contradicted: ${pageSummary.contradicted}`;
     uncertainCount.textContent = `Uncertain: ${pageSummary.uncertain}`;
+    verdictHintText.textContent =
+      "Uncertain means evidence requirements were not met (or the model was inconclusive), even if model confidence is high.";
 
     claims.forEach((claim) => claimsList.append(renderClaim(claim)));
 
